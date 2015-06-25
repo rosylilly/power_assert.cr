@@ -67,105 +67,105 @@ module PowerAssert
     op_length = op.length
     indent = " " * 2
 
-    message = indent
-    message += expected
-    message += " " + op + " "
-    message += actual
-    message += "\n"
+    String.build do |message|
+      message << indent
+      message << expected
+      message << " " + op + " "
+      message << actual
+      message << "\n"
 
-    message += indent
-    message += "|"
-    message += " " * expected_length
-    message += "|"
-    message += " " * op_length
-    message += "|"
-    message += "\n"
+      message << indent
+      message << "|"
+      message << " " * expected_length
+      message << "|"
+      message << " " * op_length
+      message << "|"
+      message << "\n"
 
-    message += indent
-    message += "|"
-    message += " " * expected_length
-    message += "|"
-    message += " " * op_length
-    message += actual_val.inspect
-    message += "\n"
+      message << indent
+      message << "|"
+      message << " " * expected_length
+      message << "|"
+      message << " " * op_length
+      message << actual_val.inspect
+      message << "\n"
 
-    message += indent
-    message += "|"
-    message += " " * expected_length
-    message += result.inspect
-    message += "\n"
+      message << indent
+      message << "|"
+      message << " " * expected_length
+      message << result.inspect
+      message << "\n"
 
-    message += indent
-    message += expected_val.inspect
-    message += "\n"
-
-    message
+      message << indent
+      message << expected_val.inspect
+      message << "\n"
+    end
   end
 
   private def build_message_for_call(method, recv, recv_val, arg_names, arg_vals, found_block, result)
     indent = " " * 2
 
-    message = indent
-    if recv.length > 0
-      message += recv
-      message += "."
-    end
-    message += method
-    if arg_names.length > 0
-      message += "("
-      message += arg_names.join(", ")
-      message += ")"
-    end
-    if found_block
-      message += " { ... }"
-    end
-    message += "\n"
-
-    message += indent
-    if recv.length > 0
-      message += "|"
-      message += " " * (recv.length)
-    end
-    message += "|"
-    message += " " * method.length
-    arg_names.each do |arg|
-      message += "|"
-      message += " " * (arg.length + 1)
-    end
-    message += "\n"
-
-    arg_vals.reverse.each_with_index do |val, idx|
-      message += indent
+    String.build do |message|
+      message << indent
       if recv.length > 0
-        message += "|"
-        message += " " * (recv.length)
+        message << recv
+        message << "."
       end
-      message += "|"
-      message += " " * method.length
-      stay_args = arg_names[0 ... (arg_names.length - (idx + 1))]
-      stay_args.each do |stay_arg|
-        message += "|"
-        message += " " * (stay_arg.length + 1)
+      message << method
+      if arg_names.length > 0
+        message << "("
+        message << arg_names.join(", ")
+        message << ")"
       end
-      message += val.inspect
-      message += "\n"
-    end
+      if found_block
+        message << " { ... }"
+      end
+      message << "\n"
 
-    message += indent
-    if recv.length > 0
-      message += "|"
-      message += " " * (recv.length)
-    end
-    message += result.inspect
-    message += "\n"
+      message << indent
+      if recv.length > 0
+        message << "|"
+        message << " " * (recv.length)
+      end
+      message << "|"
+      message << " " * method.length
+      arg_names.each do |arg|
+        message << "|"
+        message << " " * (arg.length + 1)
+      end
+      message << "\n"
 
-    if recv.length > 0
-      message += indent
-      message += recv_val.inspect
-      message += "\n"
-    end
+      arg_vals.reverse.each_with_index do |val, idx|
+        message << indent
+        if recv.length > 0
+          message << "|"
+          message << " " * (recv.length)
+        end
+        message << "|"
+        message << " " * method.length
+        stay_args = arg_names[0 ... (arg_names.length - (idx + 1))]
+        stay_args.each do |stay_arg|
+          message << "|"
+          message << " " * (stay_arg.length + 1)
+        end
+        message << val.inspect
+        message << "\n"
+      end
 
-    message
+      message << indent
+      if recv.length > 0
+        message << "|"
+        message << " " * (recv.length)
+      end
+      message << result.inspect
+      message << "\n"
+
+      if recv.length > 0
+        message << indent
+        message << recv_val.inspect
+        message << "\n"
+      end
+    end
   end
 end
 
