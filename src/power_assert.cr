@@ -139,7 +139,11 @@ module PowerAssert
     end
 
     def breakdowns(indent : Int32)
-      Breakdowns.new(1, Breakdown.new(@value.inspect, indent))
+      if inspectable?
+        Breakdowns.new(1, Breakdown.new(@value.inspect, indent))
+      else
+        Breakdowns.new(0)
+      end
     end
 
     def nop?
@@ -151,8 +155,8 @@ module PowerAssert
     def initialize(@ident = "", @value = nil)
     end
 
-    def breakdowns
-      Breakdowns.new(0)
+    def inspectable?
+      false
     end
 
     def nop?
