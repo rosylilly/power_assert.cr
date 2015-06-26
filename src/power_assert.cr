@@ -1,7 +1,7 @@
 require "spec"
 
 module PowerAssert
-  VERSION = "0.1.0"
+  VERSION = "0.2.0"
 
   Operators = [
     "!", "!=", "%", "&", "*", "**", "+", "-", "/", "<", "<<", "<=", "<=>", "==", "===",
@@ -46,7 +46,7 @@ module PowerAssert
       io << " " * PowerAssert.config.global_indent
 
       main_value = breakdowns.first
-      main_range = main_value.indent .. (main_value.indent + main_value.value.length)
+      main_range = main_value.indent ... (main_value.indent + main_value.value.length)
 
       if only_bars
         main_value = nil
@@ -55,17 +55,19 @@ module PowerAssert
 
       overlap = false
 
-      breakdowns.sort_by(&.indent).inject(0) do |i, breakdown|
-        point = breakdown.indent - i
-        wrote = breakdown.indent + 1
+      breakdowns.sort_by(&.indent).inject(0) do |wrote, breakdown|
+        point = breakdown.indent - wrote
+        wrote += point
         if !main_range.includes?(breakdown.indent) && breakdown != main_value
           io << " " * point
           io << "|"
+          wrote += 1
         elsif breakdown == main_value && main_value
           io << " " * point
           io << main_value.value
-          wrote += (main_value.value.length - 1)
+          wrote += main_value.value.length
         else
+          wrote -= point
           overlap = true
         end
         wrote
@@ -167,7 +169,7 @@ module PowerAssert
   class MethodCall < Node
     def initialize(
       @ident : String, @value : T, @recv : PowerAssert::Node,
-      @args : Array(PowerAssert::Node), @named_args : Hash(Symbol, PowerAssert::Node),
+      @args : Array(PowerAssert::Node), @named_args : Array(PowerAssert::NamedArg),
       @block)
     end
 
@@ -187,6 +189,11 @@ module PowerAssert
         arg.to_s(io)
         io << ", " if idx < (@args.length - 1)
       end
+      @named_args.each_with_index do |named_arg, idx|
+        io << ", " if idx > 0 || @args.length > 0
+        io << "#{named_arg.name}: "
+        named_arg.value.to_s(io)
+      end
       io << ")" if with_parenthesis?
       io << " " if operator? || with_block?
       if with_block?
@@ -202,6 +209,10 @@ module PowerAssert
         indents += 2
         aindents = @args.map(&.indent_size)
         indents += aindents.sum + (2 * (aindents.length - 1))
+        nindents = @named_args.map do |narg|
+          narg.name.inspect.length + 1 + narg.value.indent_size + 2
+        end
+        indents += nindents.sum
       end
       if with_block?
         indents += 5
@@ -223,7 +234,7 @@ module PowerAssert
     end
 
     def has_args?
-      @args.length > 0
+      @args.length > 0 || @named_args.length > 0
     end
 
     def with_block?
@@ -248,12 +259,29 @@ module PowerAssert
       @args.each_with_index do |arg, idx|
         aindents = @args[0 ... idx].map(&.indent_size)
 
-        bdowns.concat(arg.breakdowns(left_indent_size + 1 + aindents.sum + (aindents.length * 2)))
+        bdowns.concat(arg.breakdowns(indent + left_indent_size + 1 + aindents.sum + (aindents.length * 2)))
+      end
+
+      args_indent = @args.map(&.indent_size).sum + (@args.length * 2)
+      @named_args.each_with_index do |arg, idx|
+        before_nindents = @named_args[0 ... idx].map do |narg|
+          narg.name.inspect.length + 1 + narg.value.indent_size + 2
+        end
+        nindent = indent + left_indent_size + 1 + args_indent + arg.name.inspect.length + 1 + before_nindents.sum
+        bdowns.concat(arg.value.breakdowns(nindent))
       end
 
       bdowns.concat(@recv.breakdowns(indent)) unless @recv.nop?
 
       bdowns
+    end
+  end
+
+  struct NamedArg
+    property name
+    property value
+
+    def initialize(@name, @value)
     end
   end
 
@@ -289,10 +317,10 @@ module PowerAssert
         %args.push(get_ast({{ arg }}))
       {% end %}
 
-      %named_args = {} of Symbol => PowerAssert::Node
+      %named_args = [] of PowerAssert::NamedArg
       {% if expression.named_args.is_a?(ArrayLiteral) %}
-        {% for key, expr in expression.named_args %}
-          %named_args[{{ key.name.id }}] = get_ast({{ expr }})
+        {% for key, idx in expression.named_args %}
+          %named_args.push PowerAssert::NamedArg.new(:{{ key.name.id }}, get_ast({{ expression.named_args[idx].value }}))
         {% end %}
       {% end %}
 
