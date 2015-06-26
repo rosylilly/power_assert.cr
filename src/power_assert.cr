@@ -120,8 +120,8 @@ module PowerAssert
     def initialize(@ident : String, @value : T)
     end
 
-    def ident
-      @ident
+    def ident : String
+      return @ident
     end
 
     def inspectable?
@@ -136,8 +136,8 @@ module PowerAssert
       breakdowns(0)
     end
 
-    def indent_size
-      ident.length
+    def indent_size : Int32
+      return ident.length
     end
 
     def breakdowns(indent : Int32)
@@ -203,22 +203,29 @@ module PowerAssert
       end
     end
 
-    def indent_size
+    def indent_size : Int32
       indents = left_indent_size
       if has_args?
         indents += 2
-        aindents = @args.map(&.indent_size)
-        indents += aindents.sum + (2 * (aindents.length - 1))
-        nindents = @named_args.map do |narg|
-          narg.name.inspect.length + 1 + narg.value.indent_size + 2
+        if @args.length > 0
+          aindents = @args.map(&.indent_size)
+          indents += aindents.sum + (2 * (aindents.length - 1))
         end
-        indents += nindents.sum
+
+        if @named_args.length > 0
+          nindents = 0
+          @named_args.each do |narg|
+            nindents += (narg.name.inspect.length + 1 + narg.value.indent_size + 2)
+          end
+          indents += nindents
+        end
       end
       if with_block?
         indents += 5
         indents += block_string.length
       end
-      indents
+
+      return indents
     end
 
     def left_indent_size
@@ -264,10 +271,11 @@ module PowerAssert
 
       args_indent = @args.map(&.indent_size).sum + (@args.length * 2)
       @named_args.each_with_index do |arg, idx|
-        before_nindents = @named_args[0 ... idx].map do |narg|
-          narg.name.inspect.length + 1 + narg.value.indent_size + 2
+        before_nindents = 0
+        @named_args[0 ... idx].each do |narg|
+          before_nindents += (narg.name.inspect.length + 1 + narg.value.indent_size + 2)
         end
-        nindent = indent + left_indent_size + 1 + args_indent + arg.name.inspect.length + 1 + before_nindents.sum
+        nindent = indent + left_indent_size + 1 + args_indent + arg.name.inspect.length + 1 + before_nindents
         bdowns.concat(arg.value.breakdowns(nindent))
       end
 
@@ -281,7 +289,7 @@ module PowerAssert
     property name
     property value
 
-    def initialize(@name, @value)
+    def initialize(@name : Symbol, @value : PowerAssert::Node)
     end
   end
 
