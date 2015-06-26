@@ -30,7 +30,7 @@ describe PowerAssert do
 
   describe "Method call" do
     it "should be fail" do
-      assert falsey
+      assert falsey == true
     end
 
     it "should be fail" do
@@ -51,7 +51,7 @@ describe PowerAssert do
     it "should be fail" do
       array = [1, 2, 3]
 
-      assert array.any? { |n| n == 0 }
+      assert array.any? { |n| n == 0 }.nil?
     end
   end
 end
