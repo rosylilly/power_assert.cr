@@ -1,6 +1,6 @@
 # power_assert.cr
 
-[![docrystal.org](http://www.docrystal.org/badge.svg)](http://wwww.docrystal.org/github.com/rosylilly/power_assert.cr)
+[![docrystal.org](http://www.docrystal.org/badge.svg)](http://www.docrystal.org/github.com/rosylilly/power_assert.cr)
 
 PowerAssert provides the more powerful assertion to you.
 
