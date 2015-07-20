@@ -46,7 +46,7 @@ more examples in `spec`.
 ## Configure
 
 - `global_indent : Int` : A indent size of assertion messages.
-- `sort_by : Symbol` : Sort order of breakdowns. allowed: `:default`, `:reverse`, `:left` and `right`.
+- `sort_by : Symbol` : Sort order of breakdowns. allowed: `:default`, `:reverse`, `:left` and `:right`.
 - `expand_block : Bool` : Show block's codes in the breakdown.
 
 ## Example Outputs
