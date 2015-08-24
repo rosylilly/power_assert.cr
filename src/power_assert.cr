@@ -46,7 +46,7 @@ module PowerAssert
       io << " " * PowerAssert.config.global_indent
 
       main_value = breakdowns.first
-      main_range = main_value.indent ... (main_value.indent + main_value.value.length + 4)
+      main_range = main_value.indent ... (main_value.indent + main_value.value.length)
 
       if only_bars
         main_value = nil
@@ -60,13 +60,12 @@ module PowerAssert
         wrote += point
         if !main_range.includes?(breakdown.indent) && breakdown != main_value
           io << " " * point
-          io << "│"
-          wrote += 2
+          io << "|"
+          wrote += 1
         elsif breakdown == main_value && main_value
           io << " " * point
-          io << "└ "
           io << main_value.value
-          wrote += main_value.value.length + 3
+          wrote += main_value.value.length
         else
           wrote -= point
           overlap = true
