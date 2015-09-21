@@ -46,7 +46,7 @@ module PowerAssert
       io << " " * PowerAssert.config.global_indent
 
       main_value = breakdowns.first
-      main_range = main_value.indent ... (main_value.indent + main_value.value.length)
+      main_range = main_value.indent ... (main_value.indent + main_value.value.bytesize)
 
       if only_bars
         main_value = nil
@@ -65,7 +65,7 @@ module PowerAssert
         elsif breakdown == main_value && main_value
           io << " " * point
           io << main_value.value
-          wrote += main_value.value.length
+          wrote += main_value.value.bytesize
         else
           wrote -= point
           overlap = true
@@ -78,9 +78,9 @@ module PowerAssert
         return display(io, breakdowns, false)
       end
 
-      if breakdowns.length > 1
+      if breakdowns.size > 1
         io << "\n"
-        display(io, breakdowns[1, breakdowns.length], overlap)
+        display(io, breakdowns[1, breakdowns.size], overlap)
       end
     end
 
@@ -137,7 +137,7 @@ module PowerAssert
     end
 
     def indent_size : Int32
-      return ident.length
+      return ident.bytesize
     end
 
     def breakdowns(indent : Int32)
@@ -187,10 +187,10 @@ module PowerAssert
       io << " " if !with_parenthesis? && has_args?
       @args.each_with_index do |arg, idx|
         arg.to_s(io)
-        io << ", " if idx < (@args.length - 1)
+        io << ", " if idx < (@args.size - 1)
       end
       @named_args.each_with_index do |named_arg, idx|
-        io << ", " if idx > 0 || @args.length > 0
+        io << ", " if idx > 0 || @args.size > 0
         io << "#{named_arg.name}: "
         named_arg.value.to_s(io)
       end
@@ -207,29 +207,29 @@ module PowerAssert
       indents = left_indent_size
       if has_args?
         indents += 2
-        if @args.length > 0
+        if @args.size > 0
           aindents = @args.map(&.indent_size)
-          indents += aindents.sum + (2 * (aindents.length - 1))
+          indents += aindents.sum + (2 * (aindents.size - 1))
         end
 
-        if @named_args.length > 0
+        if @named_args.size > 0
           nindents = 0
           @named_args.each do |narg|
-            nindents += (narg.name.inspect.length + 1 + narg.value.indent_size + 2)
+            nindents += (narg.name.inspect.bytesize + 1 + narg.value.indent_size + 2)
           end
           indents += nindents
         end
       end
       if with_block?
         indents += 5
-        indents += block_string.length
+        indents += block_string.bytesize
       end
 
       return indents
     end
 
     def left_indent_size
-      @recv.indent_size +  @ident.length + (@recv.nop? ? 0 : 1)
+      @recv.indent_size +  @ident.bytesize + (@recv.nop? ? 0 : 1)
     end
 
     def operator?
@@ -241,11 +241,11 @@ module PowerAssert
     end
 
     def has_args?
-      @args.length > 0 || @named_args.length > 0
+      @args.size > 0 || @named_args.size > 0
     end
 
     def with_block?
-      @block.length > 0
+      @block.bytesize > 0
     end
 
     def block_string
@@ -266,16 +266,16 @@ module PowerAssert
       @args.each_with_index do |arg, idx|
         aindents = @args[0 ... idx].map(&.indent_size)
 
-        bdowns.concat(arg.breakdowns(indent + left_indent_size + 1 + aindents.sum + (aindents.length * 2)))
+        bdowns.concat(arg.breakdowns(indent + left_indent_size + 1 + aindents.sum + (aindents.size * 2)))
       end
 
-      args_indent = @args.map(&.indent_size).sum + (@args.length * 2)
+      args_indent = @args.map(&.indent_size).sum + (@args.size * 2)
       @named_args.each_with_index do |arg, idx|
         before_nindents = 0
         @named_args[0 ... idx].each do |narg|
-          before_nindents += (narg.name.inspect.length + 1 + narg.value.indent_size + 2)
+          before_nindents += (narg.name.inspect.bytesize + 1 + narg.value.indent_size + 2)
         end
-        nindent = indent + left_indent_size + 1 + args_indent + arg.name.inspect.length + 1 + before_nindents
+        nindent = indent + left_indent_size + 1 + args_indent + arg.name.inspect.bytesize + 1 + before_nindents
         bdowns.concat(arg.value.breakdowns(nindent))
       end
 
