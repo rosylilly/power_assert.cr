@@ -55,7 +55,7 @@ module PowerAssert
 
       overlap = false
 
-      breakdowns.sort_by(&.indent).inject(0) do |wrote, breakdown|
+      breakdowns.sort_by(&.indent).reduce(0) do |wrote, breakdown|
         point = breakdown.indent - wrote
         wrote += point
         if !main_range.includes?(breakdown.indent) && breakdown != main_value
