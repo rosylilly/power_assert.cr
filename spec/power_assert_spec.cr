@@ -54,4 +54,12 @@ describe PowerAssert do
       assert array.any? { |n| n == 0 }.nil?
     end
   end
+
+  describe "Condition" do
+    it "should be fail" do
+      a = false
+
+      assert a ? false : true
+    end
+  end
 end
