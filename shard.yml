@@ -1,0 +1,10 @@
+name: power_assert
+version: 0.2.2
+
+authors:
+  - Sho Kusano <rosylilly@aduca.org>
+
+description: |
+  PowerAssert provides the more powerful assertion to you.
+
+license: MIT
