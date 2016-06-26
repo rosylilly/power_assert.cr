@@ -1,5 +1,3 @@
-require "spec"
-
 module PowerAssert
   VERSION = "0.2.3"
 
@@ -7,6 +5,15 @@ module PowerAssert
     "!", "!=", "%", "&", "*", "**", "+", "-", "/", "<", "<<", "<=", "<=>", "==", "===",
     ">", ">=", ">>", "^", "|", "~"
   ]
+
+  class AssertionFailed < Exception
+    getter file : String
+    getter line : Int32
+
+    def initialize(message, @file, @line)
+      super(message)
+    end
+  end
 
   class Config
     def initialize(@global_indent = 2, @sort_by = :default, @expand_block = false)
@@ -307,7 +314,7 @@ module PowerAssert
         %breakdowns.to_s(io)
       end
 
-      fail %message, {{ file }}, {{ line }}
+      raise AssertionFailed.new(%message, {{file}}, {{line}})
     end
 
     %result
