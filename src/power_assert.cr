@@ -107,7 +107,7 @@ module PowerAssert
   end
 
   class Breakdown
-    def initialize(@value, @indent)
+    def initialize(@value : String, @indent : Int32)
     end
 
     def value
@@ -124,7 +124,7 @@ module PowerAssert
   end
 
   class Node
-    def initialize(@ident : String, @value : T)
+    def initialize(@ident : String, @value_inspect : String)
     end
 
     def ident : String
@@ -132,7 +132,7 @@ module PowerAssert
     end
 
     def inspectable?
-      @ident != @value.inspect
+      @ident != @value_inspect
     end
 
     def to_s(io : IO)
@@ -149,7 +149,7 @@ module PowerAssert
 
     def breakdowns(indent : Int32)
       if inspectable?
-        Breakdowns.new(1, Breakdown.new(@value.inspect, indent))
+        Breakdowns.new(1, Breakdown.new(@value_inspect, indent))
       else
         Breakdowns.new(0)
       end
@@ -161,7 +161,7 @@ module PowerAssert
   end
 
   class NopNode < Node
-    def initialize(@ident = "", @value = nil)
+    def initialize(@ident = "", @value_inspect = "nil")
     end
 
     def inspectable?
@@ -175,9 +175,9 @@ module PowerAssert
 
   class MethodCall < Node
     def initialize(
-      @ident : String, @value : T, @recv : PowerAssert::Node,
+      @ident : String, @value_inspect : String, @recv : PowerAssert::Node,
       @args : Array(PowerAssert::Node), @named_args : Array(PowerAssert::NamedArg),
-      @block)
+      @block : String)
     end
 
     def inspectable?
@@ -268,7 +268,7 @@ module PowerAssert
 
       call_indent = indent + @recv.indent_size
       call_indent += (@recv.nop? ? 0 : 1)
-      bdowns << Breakdown.new(@value.inspect, call_indent)
+      bdowns << Breakdown.new(@value_inspect, call_indent)
 
       @args.each_with_index do |arg, idx|
         aindents = @args[0 ... idx].map(&.indent_size)
@@ -342,19 +342,19 @@ module PowerAssert
       %block = {{ expression.block.stringify }}
 
       PowerAssert::MethodCall.new(
-        {{ expression.name.stringify }}, {{ expression }},
+        {{ expression.name.stringify }}, ({{ expression }}).inspect,
         %receiver, %args, %named_args, %block
       )
     {% elsif expression.is_a?(Nop) %}
       PowerAssert::NopNode.new
     {% elsif expression.is_a?(StringLiteral) %}
-      PowerAssert::Node.new({{ expression.id.stringify }}.inspect, {{ expression }})
+      PowerAssert::Node.new({{ expression.id.stringify }}.inspect, ({{ expression }}).inspect)
     {% elsif expression.is_a?(SymbolLiteral) %}
-      PowerAssert::Node.new({{ expression }}.inspect, {{ expression }})
+      PowerAssert::Node.new({{ expression }}.inspect, ({{ expression }}).inspect)
     {% elsif expression.is_a?(RangeLiteral) %}
-      PowerAssert::Node.new({{ expression }}.inspect, {{ expression }})
+      PowerAssert::Node.new({{ expression }}.inspect, ({{ expression }}).inspect)
     {% else %}
-      PowerAssert::Node.new({{ expression.id.stringify }}, {{ expression }})
+      PowerAssert::Node.new({{ expression.id.stringify }}, ({{ expression }}).inspect)
     {% end %}
   end
 end
